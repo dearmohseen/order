@@ -1,0 +1,107 @@
+[
+  {
+    "id": 1,
+    "code": "ELECTRONICS",
+    "name": "Electronics",
+    "description": "Devices, gadgets, and electronic accessories",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 2,
+    "code": "ACCESSORIES",
+    "name": "Accessories",
+    "description": "Device add-ons and everyday accessories",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 3,
+    "code": "WEARABLES",
+    "name": "Wearables",
+    "description": "Smart watches, fitness trackers, and wearables",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 4,
+    "code": "FITNESS",
+    "name": "Fitness",
+    "description": "Exercise equipment, yoga gear, and workout essentials",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 5,
+    "code": "HOME_APPLIANCES",
+    "name": "Home Appliances",
+    "description": "Kitchen and home electrical appliances",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 6,
+    "code": "FURNITURE",
+    "name": "Furniture",
+    "description": "Home and office furniture items",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 7,
+    "code": "HOME_DECOR",
+    "name": "Home Decor",
+    "description": "Decorative products for home interiors",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 8,
+    "code": "KITCHEN",
+    "name": "Kitchen",
+    "description": "Cookware, utensils, and kitchen tools",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 9,
+    "code": "OFFICE_SUPPLIES",
+    "name": "Office Supplies",
+    "description": "Office equipment and workplace essentials",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 10,
+    "code": "STATIONERY",
+    "name": "Stationery",
+    "description": "Writing materials and paper products",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 11,
+    "code": "OUTDOOR",
+    "name": "Outdoor",
+    "description": "Camping, travel, and outdoor lifestyle products",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 12,
+    "code": "BAGS",
+    "name": "Bags",
+    "description": "Backpacks, laptop bags, travel bags",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 13,
+    "code": "FOOTWEAR",
+    "name": "Footwear",
+    "description": "Shoes and athletic footwear",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 14,
+    "code": "PERSONAL_CARE",
+    "name": "Personal Care",
+    "description": "Personal grooming and hygiene products",
+    "status": "ACTIVE"
+  },
+  {
+    "id": 15,
+    "code": "CLEANING",
+    "name": "Cleaning",
+    "description": "Household and industrial cleaning products",
+    "status": "ACTIVE"
+  }
+]
