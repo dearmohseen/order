@@ -2,11 +2,13 @@ package com.mk.order.controller;
 
 import com.mk.order.entity.Order;
 import com.mk.order.utility.OrderUtility;
+import com.sun.net.httpserver.Authenticator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,15 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<String> loadProducts(@RequestBody List<Order> orders) {
+    public ResponseEntity<String> loadProducts() throws IOException {
+        orderUtility.loadProducts();
         return new ResponseEntity<>("Success", HttpStatus.OK);
     }
+
+    @GetMapping("/initialize")
+    public String initializeData() throws IOException {
+        orderUtility.initializeData();
+        return "Success";
+    }
+
 }
