@@ -1,23 +1,24 @@
 package com.mk.order.utility;
 
-import com.mk.order.entity.Product;
+import com.mk.order.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
 
 @Component
 public class OrderUtility {
 
     @Autowired
     private ResourceLoader resourceLoader;
+
+    @Autowired
+    ProductRepository productRepository;
 
     public void loadOrders() throws IOException {
 
@@ -34,8 +35,10 @@ public class OrderUtility {
         String productsString = new String(Files.readAllBytes(file.toPath()));
 
         ObjectMapper mapper = new ObjectMapper();
-        List<Product> products = mapper.readValue(productsString, new TypeReference<List<Product>>(){});
-        products.forEach(p -> System.out.println(p.getName()));
-        //System.out.println(products);
+//        List<Product> products = mapper.readValue(productsString, new TypeReference<List<Product>>() {
+//        });
+//        products.forEach(p -> {
+//            productRepository.save(p);
+//        });
     }
 }

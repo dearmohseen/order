@@ -2,11 +2,13 @@ package com.mk.order.controller;
 
 import com.mk.order.entity.Order;
 import com.mk.order.utility.OrderUtility;
-import com.sun.net.httpserver.Authenticator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -25,7 +27,7 @@ public class OrderController {
         List<Order> orders = new ArrayList<>();
         Order order = new Order();
         order.setId(1l);
-        order.setTotalPrice(new BigDecimal(1000.00));
+        order.setTotalAmount(new BigDecimal(1000.00));
         orders.add(order);
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }

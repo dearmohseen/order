@@ -1,32 +1,75 @@
 package com.mk.order.entity;
 
+import com.mk.order.domain.OrderStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.Instant;
 
+@Entity
+@Table(name = "orders")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode(callSuper = true)
-@Data
-@Entity
-public class Order extends BaseEntity {
+@Builder
+public class Order {
+    @Id
+    @SequenceGenerator(name = "orders_seq", sequenceName = "seq_orders_id", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "orders_seq")
+    @Column(name = "order_id")
+    private Long id;
 
-    @NotNull
-    @Digits(integer = 10, fraction = 2)
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal totalPrice;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Customer customer;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    Customer customer;
+    @Column(name = "order_number", nullable = false, length = 30, unique = true)
+    private String orderNumber;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    List<Product> products;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private OrderStatus status;
 
+    @Column(name = "currency_code", nullable = false, length = 3)
+    private String currencyCode = "USD";
+
+    @Column(name = "subtotal_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal subtotalAmount;
+
+    @Column(name = "discount_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(name = "tax_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal taxAmount;
+
+    @Column(name = "shipping_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal shippingAmount;
+
+    @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalAmount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "billing_address_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Address billingAddress;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipping_address_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Address shippingAddress;
+
+    @Column(name = "placed_at_utc", nullable = false)
+    private Instant placedAtUtc;
+
+    @Column(name = "paid_at_utc")
+    private Instant paidAtUtc;
+
+    @Column(name = "updated_at_utc", nullable = false)
+    private Instant updatedAtUtc;
 }
+

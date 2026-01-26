@@ -1,0 +1,842 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.24.xsd">
+
+    <!-- ============================================================= -->
+    <!-- Sequences                                                     -->
+    <!-- ============================================================= -->
+    <changeSet id="001-create-sequences" author="copilot">
+        <createSequence sequenceName="seq_customer_id" startValue="1000" incrementBy="1"/>
+        <createSequence sequenceName="seq_address_id" startValue="10000" incrementBy="1"/>
+        <createSequence sequenceName="seq_product_id" startValue="20000" incrementBy="1"/>
+        <createSequence sequenceName="seq_orders_id" startValue="30000" incrementBy="1"/>
+        <createSequence sequenceName="seq_orders_detail_id" startValue="30000" incrementBy="1"/>
+        <createSequence sequenceName="seq_payment_id" startValue="40000" incrementBy="1"/>
+        <createSequence sequenceName="seq_refund_id" startValue="45000" incrementBy="1"/>
+        <createSequence sequenceName="seq_shipment_id" startValue="50000" incrementBy="1"/>
+    </changeSet>
+
+    <!-- ============================================================= -->
+    <!-- Master Data: customers, addresses, products, inventory        -->
+    <!-- ============================================================= -->
+    <changeSet id="010-create-customers" author="copilot">
+        <createTable tableName="customers">
+            <column name="customer_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_customers" nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(160)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_customers_email"/>
+            </column>
+            <column name="first_name" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(32)"/>
+            <column name="status" type="VARCHAR(16)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_customers_name" tableName="customers">
+            <column name="last_name"/>
+            <column name="first_name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="020-create-addresses" author="copilot">
+        <createTable tableName="addresses">
+            <column name="address_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_addresses" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT"/>
+            <column name="address_label" type="VARCHAR(40)"/>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="VARCHAR(32)"/>
+            <column name="email" type="VARCHAR(120)"/>
+            <column name="line1" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line2" type="VARCHAR(200)"/>
+            <column name="city" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state" type="VARCHAR(120)"/>
+            <column name="postal_code" type="VARCHAR(32)"/>
+            <column name="country_code" type="VARCHAR(2)" defaultValue="US">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="addresses" baseColumnNames="customer_id"
+                referencedTableName="customers" referencedColumnNames="customer_id"
+                constraintName="fk_addresses_customer"
+                onDelete="SET NULL" onUpdate="RESTRICT"/>
+        <createIndex indexName="idx_addresses_customer" tableName="addresses">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_addresses_label" tableName="addresses">
+            <column name="address_label"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="030-create-products" author="copilot">
+        <createTable tableName="products">
+            <column name="product_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_products" nullable="false"/>
+            </column>
+            <column name="sku" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_products_sku"/>
+            </column>
+            <column name="name" type="VARCHAR(300)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(2000)"/>
+            <column name="price" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="USD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="weight_grams" type="INT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_products_name" tableName="products">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="040-create-inventory" author="copilot">
+        <createTable tableName="product_inventory">
+            <column name="product_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_product_inventory" nullable="false"/>
+            </column>
+            <column name="quantity_on_hand" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity_reserved" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="product_inventory" baseColumnNames="product_id"
+                referencedTableName="products" referencedColumnNames="product_id"
+                constraintName="fk_inventory_product"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+    </changeSet>
+
+    <!-- ============================================================= -->
+    <!-- Orders, Details, Payments, Refunds, Shipments                 -->
+    <!-- ============================================================= -->
+    <changeSet id="100-create-orders" author="copilot">
+        <createTable tableName="orders">
+            <column name="order_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_orders" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_number" type="VARCHAR(30)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_orders_order_number"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="USD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subtotal_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shipping_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="billing_address_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shipping_address_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="placed_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_at_utc" type="TIMESTAMP"/>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="orders" baseColumnNames="customer_id"
+                referencedTableName="customers" referencedColumnNames="customer_id"
+                constraintName="fk_orders_customer"
+                onDelete="RESTRICT" onUpdate="RESTRICT"/>
+
+        <addForeignKeyConstraint
+                baseTableName="orders" baseColumnNames="billing_address_id"
+                referencedTableName="addresses" referencedColumnNames="address_id"
+                constraintName="fk_orders_billing_addr"
+                onDelete="RESTRICT" onUpdate="RESTRICT"/>
+
+        <addForeignKeyConstraint
+                baseTableName="orders" baseColumnNames="shipping_address_id"
+                referencedTableName="addresses" referencedColumnNames="address_id"
+                constraintName="fk_orders_shipping_addr"
+                onDelete="RESTRICT" onUpdate="RESTRICT"/>
+        <createIndex indexName="idx_orders_customer" tableName="orders">
+            <column name="customer_id"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_status" tableName="orders">
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_orders_placed" tableName="orders">
+            <column name="placed_at_utc"/>
+        </createIndex>
+    </changeSet>
+
+
+    <!-- 110 - ORDER DETAIL with single PK -->
+    <changeSet id="110-create-order-detail" author="copilot">
+        <createTable tableName="order_detail">
+            <column name="order_detail_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_order_detail" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_number" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT"/>
+            <column name="sku" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(300)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="variant" type="VARCHAR(200)"/>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_amount" type="DECIMAL(12,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_total" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- sequences (add once globally if not already present) -->
+        <createSequence sequenceName="seq_order_detail_id" startValue="60000" incrementBy="1"/>
+
+        <addForeignKeyConstraint
+                baseTableName="order_detail" baseColumnNames="order_id"
+                referencedTableName="orders" referencedColumnNames="order_id"
+                constraintName="fk_detail_order"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+
+        <addForeignKeyConstraint
+                baseTableName="order_detail" baseColumnNames="product_id"
+                referencedTableName="products" referencedColumnNames="product_id"
+                constraintName="fk_detail_product"
+                onDelete="SET NULL" onUpdate="RESTRICT"/>
+
+        <!-- Keep line_number meaningful and unique per order -->
+        <addUniqueConstraint tableName="order_detail"
+                             columnNames="order_id, line_number"
+                             constraintName="uk_order_detail_order_line"/>
+
+        <createIndex indexName="idx_order_detail_order" tableName="order_detail">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_order_detail_sku" tableName="order_detail">
+            <column name="sku"/>
+        </createIndex>
+        <createIndex indexName="idx_order_detail_product" tableName="order_detail">
+            <column name="product_id"/>
+        </createIndex>
+    </changeSet>
+
+
+    <changeSet id="120-create-payments" author="copilot">
+        <createTable tableName="payments">
+            <column name="payment_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_payments" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(3)" defaultValue="USD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="transaction_ref" type="VARCHAR(100)"/>
+            <column name="auth_code" type="VARCHAR(40)"/>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="authorized_at_utc" type="TIMESTAMP"/>
+            <column name="captured_at_utc" type="TIMESTAMP"/>
+            <column name="failure_reason" type="VARCHAR(200)"/>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="payments" baseColumnNames="order_id"
+                referencedTableName="orders" referencedColumnNames="order_id"
+                constraintName="fk_payment_order"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+
+        <createIndex indexName="idx_payments_order" tableName="payments">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_payments_status" tableName="payments">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="130-create-payment-refund" author="copilot">
+        <createTable tableName="payment_refund">
+            <column name="refund_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_payment_refund" nullable="false"/>
+            </column>
+            <column name="payment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(200)"/>
+            <column name="refunded_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="payment_refund" baseColumnNames="payment_id"
+                referencedTableName="payments" referencedColumnNames="payment_id"
+                constraintName="fk_refund_payment"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+
+    </changeSet>
+
+    <changeSet id="140-create-shipments" author="copilot">
+        <createTable tableName="shipments">
+            <column name="shipment_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_shipments" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="carrier" type="VARCHAR(40)"/>
+            <column name="service" type="VARCHAR(40)"/>
+            <column name="tracking_number" type="VARCHAR(60)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="READY">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shipped_at_utc" type="TIMESTAMP"/>
+            <column name="delivered_at_utc" type="TIMESTAMP"/>
+            <column name="created_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at_utc" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+                baseTableName="shipments" baseColumnNames="order_id"
+                referencedTableName="orders" referencedColumnNames="order_id"
+                constraintName="fk_shipment_order"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+
+        <createIndex indexName="idx_shipments_order" tableName="shipments">
+            <column name="order_id"/>
+        </createIndex>
+        <createIndex indexName="idx_shipments_status" tableName="shipments">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+
+    <!-- 150 - SHIPMENT ITEM with single PK and FK to order_detail_id -->
+    <changeSet id="150-create-shipment-item" author="copilot">
+        <createTable tableName="shipment_item">
+            <column name="shipment_item_id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_shipment_item" nullable="false"/>
+            </column>
+            <column name="shipment_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_detail_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createSequence sequenceName="seq_shipment_item_id" startValue="70000" incrementBy="1"/>
+
+        <addForeignKeyConstraint
+                baseTableName="shipment_item" baseColumnNames="shipment_id"
+                referencedTableName="shipments" referencedColumnNames="shipment_id"
+                constraintName="fk_shipment_item_shipment"
+                onDelete="CASCADE" onUpdate="RESTRICT"/>
+
+        <addForeignKeyConstraint
+                baseTableName="shipment_item" baseColumnNames="order_detail_id"
+                referencedTableName="order_detail" referencedColumnNames="order_detail_id"
+                constraintName="fk_shipment_item_detail"
+                onDelete="RESTRICT" onUpdate="RESTRICT"/>
+
+        <createIndex indexName="idx_shipment_item_shipment" tableName="shipment_item">
+            <column name="shipment_id"/>
+        </createIndex>
+        <createIndex indexName="idx_shipment_item_detail" tableName="shipment_item">
+            <column name="order_detail_id"/>
+        </createIndex>
+    </changeSet>
+
+
+    <!-- ============================================================= -->
+    <!-- Seed data (use context 'seed' to control)                     -->
+    <!-- ============================================================= -->
+    <changeSet id="900-seed-customers-addresses-products" author="copilot" context="seed">
+        <!-- Customers -->
+        <insert tableName="customers">
+            <column name="customer_id" valueNumeric="501"/>
+            <column name="email" value="alex.j@example.com"/>
+            <column name="first_name" value="Alex"/>
+            <column name="last_name" value="Johnson"/>
+            <column name="phone" value="+1-555-0100"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:00:00"/>
+        </insert>
+        <insert tableName="customers">
+            <column name="customer_id" valueNumeric="502"/>
+            <column name="email" value="priya.s@example.com"/>
+            <column name="first_name" value="Priya"/>
+            <column name="last_name" value="Singh"/>
+            <column name="phone" value="+1-555-0101"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at_utc" valueDate="2026-01-22T09:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-22T09:00:00"/>
+        </insert>
+        <insert tableName="customers">
+            <column name="customer_id" valueNumeric="503"/>
+            <column name="email" value="jamie.lee@example.com"/>
+            <column name="first_name" value="Jamie"/>
+            <column name="last_name" value="Lee"/>
+            <column name="phone" value="+1-555-0102"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="created_at_utc" valueDate="2026-01-24T12:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-24T12:00:00"/>
+        </insert>
+
+        <!-- Addresses -->
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10001"/>
+            <column name="customer_id" valueNumeric="501"/>
+            <column name="address_label" value="shipping"/>
+            <column name="name" value="Alex Johnson"/>
+            <column name="phone" value="+1-555-0100"/>
+            <column name="email" value="alex.j@example.com"/>
+            <column name="line1" value="1234 Sunset Blvd"/>
+            <column name="city" value="Los Angeles"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="90026"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:01:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:01:00"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10002"/>
+            <column name="customer_id" valueNumeric="501"/>
+            <column name="address_label" value="billing"/>
+            <column name="name" value="Alex Johnson"/>
+            <column name="phone" value="+1-555-0100"/>
+            <column name="email" value="alex.j@example.com"/>
+            <column name="line1" value="1234 Sunset Blvd"/>
+            <column name="city" value="Los Angeles"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="90026"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:01:10"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:01:10"/>
+        </insert>
+
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10003"/>
+            <column name="customer_id" valueNumeric="502"/>
+            <column name="address_label" value="shipping"/>
+            <column name="name" value="Priya Singh"/>
+            <column name="phone" value="+1-555-0101"/>
+            <column name="email" value="priya.s@example.com"/>
+            <column name="line1" value="77 Market St"/>
+            <column name="line2" value="Apt 4B"/>
+            <column name="city" value="San Francisco"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="94103"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-22T09:01:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-22T09:01:00"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10004"/>
+            <column name="customer_id" valueNumeric="502"/>
+            <column name="address_label" value="billing"/>
+            <column name="name" value="Priya Singh"/>
+            <column name="phone" value="+1-555-0101"/>
+            <column name="email" value="priya.s@example.com"/>
+            <column name="line1" value="77 Market St"/>
+            <column name="line2" value="Apt 4B"/>
+            <column name="city" value="San Francisco"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="94103"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-22T09:01:10"/>
+            <column name="updated_at_utc" valueDate="2026-01-22T09:01:10"/>
+        </insert>
+
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10005"/>
+            <column name="customer_id" valueNumeric="503"/>
+            <column name="address_label" value="shipping"/>
+            <column name="name" value="Jamie Lee"/>
+            <column name="phone" value="+1-555-0102"/>
+            <column name="email" value="jamie.lee@example.com"/>
+            <column name="line1" value="500 Ocean Ave"/>
+            <column name="city" value="Santa Monica"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="90401"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-24T12:01:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-24T12:01:00"/>
+        </insert>
+        <insert tableName="addresses">
+            <column name="address_id" valueNumeric="10006"/>
+            <column name="customer_id" valueNumeric="503"/>
+            <column name="address_label" value="billing"/>
+            <column name="name" value="Jamie Lee"/>
+            <column name="phone" value="+1-555-0102"/>
+            <column name="email" value="jamie.lee@example.com"/>
+            <column name="line1" value="500 Ocean Ave"/>
+            <column name="city" value="Santa Monica"/>
+            <column name="state" value="CA"/>
+            <column name="postal_code" value="90401"/>
+            <column name="country_code" value="US"/>
+            <column name="created_at_utc" valueDate="2026-01-24T12:01:10"/>
+            <column name="updated_at_utc" valueDate="2026-01-24T12:01:10"/>
+        </insert>
+
+        <!-- Products -->
+        <insert tableName="products">
+            <column name="product_id" valueNumeric="20001"/>
+            <column name="sku" value="SKU-HEADPHONES-123"/>
+            <column name="name" value="Wireless Noise-Canceling Headphones"/>
+            <column name="description" value="Over-ear, ANC, 30h battery"/>
+            <column name="price" valueNumeric="100.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="weight_grams" valueNumeric="250"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at_utc" valueDate="2026-01-18T10:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-18T10:00:00"/>
+        </insert>
+        <insert tableName="products">
+            <column name="product_id" valueNumeric="20002"/>
+            <column name="sku" value="SKU-USB-C-001"/>
+            <column name="name" value="USB-C Cable 6ft"/>
+            <column name="description" value="Durable braided cable"/>
+            <column name="price" valueNumeric="10.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="weight_grams" valueNumeric="50"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at_utc" valueDate="2026-01-18T10:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-18T10:00:00"/>
+        </insert>
+        <insert tableName="products">
+            <column name="product_id" valueNumeric="20003"/>
+            <column name="sku" value="SKU-MOUSE-777"/>
+            <column name="name" value="Ergonomic Wireless Mouse"/>
+            <column name="description" value="2.4GHz + Bluetooth"/>
+            <column name="price" valueNumeric="30.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="weight_grams" valueNumeric="90"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at_utc" valueDate="2026-01-19T08:30:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-19T08:30:00"/>
+        </insert>
+        <insert tableName="products">
+            <column name="product_id" valueNumeric="20004"/>
+            <column name="sku" value="SKU-BOOK-042"/>
+            <column name="name" value="Clean Architecture (Book)"/>
+            <column name="description" value="Paperback edition"/>
+            <column name="price" valueNumeric="40.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="weight_grams" valueNumeric="500"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="created_at_utc" valueDate="2026-01-19T08:30:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-19T08:30:00"/>
+        </insert>
+
+        <!-- Inventory -->
+        <insert tableName="product_inventory">
+            <column name="product_id" valueNumeric="20001"/>
+            <column name="quantity_on_hand" valueNumeric="20"/>
+            <column name="quantity_reserved" valueNumeric="0"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T10:00:00"/>
+        </insert>
+        <insert tableName="product_inventory">
+            <column name="product_id" valueNumeric="20002"/>
+            <column name="quantity_on_hand" valueNumeric="200"/>
+            <column name="quantity_reserved" valueNumeric="0"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T10:00:00"/>
+        </insert>
+        <insert tableName="product_inventory">
+            <column name="product_id" valueNumeric="20003"/>
+            <column name="quantity_on_hand" valueNumeric="50"/>
+            <column name="quantity_reserved" valueNumeric="0"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T10:00:00"/>
+        </insert>
+        <insert tableName="product_inventory">
+            <column name="product_id" valueNumeric="20004"/>
+            <column name="quantity_on_hand" valueNumeric="35"/>
+            <column name="quantity_reserved" valueNumeric="0"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T10:00:00"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="910-seed-orders-lines-payments-shipments" author="copilot" context="seed">
+        <!-- Orders -->
+        <insert tableName="orders">
+            <column name="order_id" valueNumeric="30001"/>
+            <column name="customer_id" valueNumeric="501"/>
+            <column name="order_number" value="AMZ-2026-000001"/>
+            <column name="status" value="PAID"/>
+            <column name="currency_code" value="USD"/>
+            <column name="subtotal_amount" valueNumeric="130.00"/>
+            <column name="discount_amount" valueNumeric="10.00"/>
+            <column name="tax_amount" valueNumeric="12.00"/>
+            <column name="shipping_amount" valueNumeric="5.99"/>
+            <column name="total_amount" valueNumeric="137.99"/>
+            <column name="billing_address_id" valueNumeric="10002"/>
+            <column name="shipping_address_id" valueNumeric="10001"/>
+            <column name="placed_at_utc" valueDate="2026-01-20T18:12:00"/>
+            <column name="paid_at_utc" valueDate="2026-01-20T18:13:30"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:13:30"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="order_id" valueNumeric="30002"/>
+            <column name="customer_id" valueNumeric="502"/>
+            <column name="order_number" value="AMZ-2026-000002"/>
+            <column name="status" value="SHIPPED"/>
+            <column name="currency_code" value="USD"/>
+            <column name="subtotal_amount" valueNumeric="60.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="tax_amount" valueNumeric="6.00"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="total_amount" valueNumeric="66.00"/>
+            <column name="billing_address_id" valueNumeric="10004"/>
+            <column name="shipping_address_id" valueNumeric="10003"/>
+            <column name="placed_at_utc" valueDate="2026-01-22T09:05:00"/>
+            <column name="paid_at_utc" valueDate="2026-01-22T09:05:45"/>
+            <column name="updated_at_utc" valueDate="2026-01-23T14:10:00"/>
+        </insert>
+
+        <insert tableName="orders">
+            <column name="order_id" valueNumeric="30003"/>
+            <column name="customer_id" valueNumeric="503"/>
+            <column name="order_number" value="AMZ-2026-000003"/>
+            <column name="status" value="CANCELLED"/>
+            <column name="currency_code" value="USD"/>
+            <column name="subtotal_amount" valueNumeric="40.00"/>
+            <column name="discount_amount" valueNumeric="40.00"/>
+            <column name="tax_amount" valueNumeric="0.00"/>
+            <column name="shipping_amount" valueNumeric="0.00"/>
+            <column name="total_amount" valueNumeric="0.00"/>
+            <column name="billing_address_id" valueNumeric="10006"/>
+            <column name="shipping_address_id" valueNumeric="10005"/>
+            <column name="placed_at_utc" valueDate="2026-01-24T12:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-24T12:30:00"/>
+        </insert>
+
+
+        <!-- In your seed changeset -->
+        <insert tableName="order_detail">
+            <column name="order_detail_id" valueNumeric="60001"/>
+            <column name="order_id" valueNumeric="30001"/>
+            <column name="line_number" valueNumeric="1"/>
+            <column name="product_id" valueNumeric="20001"/>
+            <column name="sku" value="SKU-HEADPHONES-123"/>
+            <column name="product_name" value="Wireless Noise-Canceling Headphones"/>
+            <column name="variant" value="Color: Black"/>
+            <column name="quantity" valueNumeric="1"/>
+            <column name="unit_price" valueNumeric="100.00"/>
+            <column name="discount_amount" valueNumeric="10.00"/>
+            <column name="tax_amount" valueNumeric="9.00"/>
+            <column name="line_total" valueNumeric="99.00"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:12:05"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:13:30"/>
+        </insert>
+        <insert tableName="order_detail">
+            <column name="order_detail_id" valueNumeric="60002"/>
+            <column name="order_id" valueNumeric="30001"/>
+            <column name="line_number" valueNumeric="2"/>
+            <column name="product_id" valueNumeric="20002"/>
+            <column name="sku" value="SKU-USB-C-001"/>
+            <column name="product_name" value="USB-C Cable 6ft"/>
+            <column name="quantity" valueNumeric="3"/>
+            <column name="unit_price" valueNumeric="10.00"/>
+            <column name="discount_amount" valueNumeric="0.00"/>
+            <column name="tax_amount" valueNumeric="3.00"/>
+            <column name="line_total" valueNumeric="33.00"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:12:10"/>
+            <column name="updated_at_utc" valueDate="2026-01-20T18:13:30"/>
+        </insert>
+
+        <!-- Payments -->
+        <insert tableName="payments">
+            <column name="payment_id" valueNumeric="40001"/>
+            <column name="order_id" valueNumeric="30001"/>
+            <column name="provider" value="STRIPE"/>
+            <column name="method" value="CARD"/>
+            <column name="amount" valueNumeric="137.99"/>
+            <column name="currency_code" value="USD"/>
+            <column name="status" value="CAPTURED"/>
+            <column name="transaction_ref" value="ch_1AMZ001"/>
+            <column name="auth_code" value="AUTH123"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:13:00"/>
+            <column name="authorized_at_utc" valueDate="2026-01-20T18:13:05"/>
+            <column name="captured_at_utc" valueDate="2026-01-20T18:13:30"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="payment_id" valueNumeric="40002"/>
+            <column name="order_id" valueNumeric="30002"/>
+            <column name="provider" value="PAYPAL"/>
+            <column name="method" value="PAYPAL"/>
+            <column name="amount" valueNumeric="66.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="status" value="CAPTURED"/>
+            <column name="transaction_ref" value="paypal_txn_2002"/>
+            <column name="created_at_utc" valueDate="2026-01-22T09:05:30"/>
+            <column name="captured_at_utc" valueDate="2026-01-22T09:05:45"/>
+        </insert>
+        <insert tableName="payments">
+            <column name="payment_id" valueNumeric="40003"/>
+            <column name="order_id" valueNumeric="30003"/>
+            <column name="provider" value="STRIPE"/>
+            <column name="method" value="CARD"/>
+            <column name="amount" valueNumeric="0.00"/>
+            <column name="currency_code" value="USD"/>
+            <column name="status" value="FAILED"/>
+            <column name="transaction_ref" value="ch_1AMZ003"/>
+            <column name="created_at_utc" valueDate="2026-01-24T12:05:00"/>
+            <column name="failure_reason" value="Order cancelled before capture"/>
+        </insert>
+
+        <!-- Refund -->
+        <insert tableName="payment_refund">
+            <column name="refund_id" valueNumeric="45001"/>
+            <column name="payment_id" valueNumeric="40002"/>
+            <column name="amount" valueNumeric="10.00"/>
+            <column name="reason" value="Price adjustment"/>
+            <column name="refunded_at_utc" valueDate="2026-01-23T10:00:00"/>
+        </insert>
+
+        <!-- Shipments & Items -->
+        <insert tableName="shipments">
+            <column name="shipment_id" valueNumeric="50001"/>
+            <column name="order_id" valueNumeric="30001"/>
+            <column name="carrier" value="UPS"/>
+            <column name="service" value="Ground"/>
+            <column name="tracking_number" value="1Z999AA10123456784"/>
+            <column name="status" value="DELIVERED"/>
+            <column name="shipped_at_utc" valueDate="2026-01-21T10:00:00"/>
+            <column name="delivered_at_utc" valueDate="2026-01-23T15:45:00"/>
+            <column name="created_at_utc" valueDate="2026-01-20T18:20:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-23T15:45:00"/>
+        </insert>
+        <insert tableName="shipments">
+            <column name="shipment_id" valueNumeric="50002"/>
+            <column name="order_id" valueNumeric="30002"/>
+            <column name="carrier" value="USPS"/>
+            <column name="service" value="Priority"/>
+            <column name="tracking_number" value="9400116900000000000000"/>
+            <column name="status" value="SHIPPED"/>
+            <column name="shipped_at_utc" valueDate="2026-01-22T16:00:00"/>
+            <column name="created_at_utc" valueDate="2026-01-22T12:00:00"/>
+            <column name="updated_at_utc" valueDate="2026-01-22T16:00:00"/>
+        </insert>
+        <insert tableName="shipment_item">
+            <column name="shipment_item_id" valueNumeric="70001"/>
+            <column name="shipment_id" valueNumeric="50001"/>
+            <column name="order_detail_id" valueNumeric="60001"/>
+            <column name="quantity" valueNumeric="1"/>
+        </insert>
+        <insert tableName="shipment_item">
+            <column name="shipment_item_id" valueNumeric="70002"/>
+            <column name="shipment_id" valueNumeric="50001"/>
+            <column name="order_detail_id" valueNumeric="60002"/>
+            <column name="quantity" valueNumeric="3"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
