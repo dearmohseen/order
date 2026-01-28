@@ -41,12 +41,6 @@ public class OrderDetail {
     @EqualsAndHashCode.Exclude
     private Product product; // optional
 
-    @Column(name = "sku", nullable = false, length = 64)
-    private String sku;
-
-    @Column(name = "product_name", nullable = false, length = 300)
-    private String productName;
-
     @Column(name = "variant", length = 200)
     private String variant;
 

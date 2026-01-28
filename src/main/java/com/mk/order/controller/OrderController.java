@@ -1,6 +1,7 @@
 package com.mk.order.controller;
 
-import com.mk.order.entity.Order;
+import com.mk.order.bean.OrderResponse;
+import com.mk.order.service.OrderService;
 import com.mk.order.utility.OrderUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,19 +21,18 @@ public class OrderController {
     @Autowired
     OrderUtility orderUtility;
 
+    @Autowired
+    OrderService orderService;
+
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        List<Order> orders = new ArrayList<>();
-        Order order = new Order();
-        order.setId(1l);
-        order.setTotalAmount(new BigDecimal(1000.00));
-        orders.add(order);
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        List<OrderResponse> orders = orderService.getAllOrders();
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
 
-    @PostMapping
-    public ResponseEntity<String> loadProducts() throws IOException {
-        orderUtility.loadProducts();
+    @PostMapping()
+    public ResponseEntity<String> createOrder() throws IOException {
+        //orderUtility.loadProducts();
         return new ResponseEntity<>("Success", HttpStatus.OK);
     }
 

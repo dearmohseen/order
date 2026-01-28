@@ -24,12 +24,6 @@ public class OrderUtility {
 
     }
 
-    public void loadProducts() throws IOException {
-        File file = new ClassPathResource("static/products.json").getFile();
-        String products = new String(Files.readAllBytes(file.toPath()));
-        System.out.println(products);
-    }
-
     public void initializeData() throws IOException {
         File file = new ClassPathResource("static/products.json").getFile();
         String productsString = new String(Files.readAllBytes(file.toPath()));
