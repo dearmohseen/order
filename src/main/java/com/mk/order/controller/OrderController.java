@@ -4,6 +4,8 @@ import com.mk.order.bean.OrderResponse;
 import com.mk.order.bean.ProductBean;
 import com.mk.order.service.OrderService;
 import com.mk.order.utility.OrderUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
+
+    private Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     OrderUtility orderUtility;
@@ -39,7 +43,13 @@ public class OrderController {
 
     @GetMapping("/products")
     public List<ProductBean> getProducts() {
-        return orderService.getAllProducts();
+        return orderService.getProductsByWebClient();
+    }
+
+    @GetMapping("/feign/products")
+    public List<ProductBean> getProductsByFeign() {
+        logger.info("getProductsByFeign");
+        return orderService.getProductsByFeign();
     }
 
     @GetMapping("/initialize")

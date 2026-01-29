@@ -9,5 +9,7 @@ public interface OrderService {
 
     public List<OrderResponse> getAllOrders();
 
-    public List<ProductBean> getAllProducts();
+    public List<ProductBean> getProductsByWebClient();
+
+    List<ProductBean> getProductsByFeign();
 }
