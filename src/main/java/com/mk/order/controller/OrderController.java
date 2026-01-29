@@ -1,6 +1,7 @@
 package com.mk.order.controller;
 
 import com.mk.order.bean.OrderResponse;
+import com.mk.order.bean.ProductBean;
 import com.mk.order.service.OrderService;
 import com.mk.order.utility.OrderUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,11 @@ public class OrderController {
     public ResponseEntity<String> createOrder() throws IOException {
         //orderUtility.loadProducts();
         return new ResponseEntity<>("Success", HttpStatus.OK);
+    }
+
+    @GetMapping("/products")
+    public List<ProductBean> getProducts() {
+        return orderService.getAllProducts();
     }
 
     @GetMapping("/initialize")

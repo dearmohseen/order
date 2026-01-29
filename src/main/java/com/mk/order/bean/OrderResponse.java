@@ -1,6 +1,6 @@
 package com.mk.order.bean;
 
-import com.mk.order.domain.OrderStatus;
+import com.mk.order.constants.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

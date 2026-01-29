@@ -1,6 +1,6 @@
 package com.mk.order.entity;
 
-import com.mk.order.domain.ShipmentStatus;
+import com.mk.order.constants.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

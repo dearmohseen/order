@@ -1,6 +1,6 @@
 package com.mk.order.entity;
 
-import com.mk.order.domain.PaymentStatus;
+import com.mk.order.constants.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
